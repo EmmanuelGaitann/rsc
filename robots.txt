@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /application/
+Disallow: /system/
+
+Sitemap: https://www.rsc-cameroon.com/sitemap.xml

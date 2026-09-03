@@ -1,0 +1,57 @@
+Options -Indexes
+RewriteEngine On
+
+# ── En-têtes de sécurité ──────────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# ── Fichiers sensibles : jamais servis par le web ─────────────────────
+# (dumps SQL, docs projet, configs, sauvegardes, scripts de maintenance)
+<FilesMatch "\.(sql|sqlite|bak|backup|old|orig|log|md|rst|docx?|xlsx?|pdf~|ini|lock|json|yml|yaml|editorconfig|dist|env)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+<FilesMatch "^(composer\.(json|lock)|readme\.rst|license\.txt|\.editorconfig)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Outil de secours : accessible uniquement depuis le poste local
+<Files "reset_password.php">
+  <IfModule mod_authz_core.c>
+    Require local
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+    Allow from 127.0.0.1 ::1
+  </IfModule>
+</Files>
+
+# ── Force HTTPS (uniquement en ligne — jamais sur un poste local) ─────
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1|\[::1\])(:[0-9]+)?$ [NC]
+RewriteCond %{HTTP_HOST} !^(192\.168\.|10\.)  [NC]
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# L'environnement (development/production) est détecté automatiquement
+# dans index.php — ne plus le forcer ici.
+
+# ── Routing CodeIgniter ───────────────────────────────────────────────
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/$1 [L]
