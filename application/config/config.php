@@ -482,6 +482,7 @@ $config['csrf_exclude_uris'] = array(
     'admin/inline_save',
     'admin/toggle_section',
     'admin/upload_media',
+    'admin/upload_document',
     'admin/do_upload_gallery',
     // admin/delete_media retiré des exclusions : désormais formulaire POST + token CSRF
 );

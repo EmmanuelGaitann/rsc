@@ -62,6 +62,15 @@ $route['admin/gallery_delete/(:num)']    = 'admin/gallery_delete/$1';
 $route['admin/gallery_toggle/(:num)']    = 'admin/gallery_toggle/$1';
 
 /* --- Admin Traductions --- */
+$route['admin/documents']                = 'admin/documents';
+$route['admin/document_new']             = 'admin/document_new';
+$route['admin/document_do_new']          = 'admin/document_do_new';
+$route['admin/document_edit/(:num)']     = 'admin/document_edit/$1';
+$route['admin/document_do_edit/(:num)']  = 'admin/document_do_edit/$1';
+$route['admin/document_delete/(:num)']   = 'admin/document_delete/$1';
+$route['admin/document_toggle/(:num)']   = 'admin/document_toggle/$1';
+$route['admin/upload_document']          = 'admin/upload_document';
+
 $route['admin/translations']             = 'admin/translations';
 $route['admin/translation_save']         = 'admin/translation_save';
 $route['admin/translation_delete/(:num)']= 'admin/translation_delete/$1';
@@ -88,6 +97,10 @@ $route['partenaires/ingersoll-rand']    = 'partners/ingersoll_rand';
 $route['partenaires/renner']            = 'partners/renner';
 $route['partenaires/cas-lubrifiants']   = 'partners/cas_lubricants';
 $route['mentions-legales']              = 'legal/index';
+
+// Documents téléchargeables servis depuis la base (table rsc_documents)
+$route['telechargement/(:num)']         = 'documents/download/$1';
+$route['telechargement/(:num)/(:any)']  = 'documents/download/$1/$2';
 
 $route['sitemap.xml']  = 'sitemap/index';
 $route['sitemap']      = 'sitemap/index';

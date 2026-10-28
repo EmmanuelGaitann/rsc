@@ -82,6 +82,10 @@
        class="nav-item <?= (strpos($this->uri->segment(2), 'gallery') === 0) ? 'active' : '' ?>">
       <i class="fa-solid fa-photo-film fa-fw"></i> Galerie
     </a>
+    <a href="<?= base_url('admin/documents') ?>"
+       class="nav-item <?= (strpos((string)$this->uri->segment(2), 'document') === 0) ? 'active' : '' ?>">
+      <i class="fa-solid fa-file-arrow-down fa-fw"></i> Documents &amp; PDF
+    </a>
 
     <?php if (!empty($admin_is_super)): ?>
     <div class="nav-section-label">Administration</div>

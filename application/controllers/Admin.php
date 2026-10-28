@@ -1291,6 +1291,229 @@ class Admin extends CI_Controller {
     }
 
     // ================================================================
+    // DOCUMENTS TÉLÉCHARGEABLES (PDF, DOCX, XLSX…)
+    // ================================================================
+
+    public function documents()
+    {
+        $this->load->model('Document_model');
+        $this->Document_model->ensure_schema();
+
+        $data['documents_list'] = $this->Document_model->get_all();
+        $data['doc_pages']      = Document_model::$pages;
+        $data['success']        = $this->session->flashdata('doc_success');
+        $data['error']          = $this->session->flashdata('doc_error');
+        $this->_view('documents', $data);
+    }
+
+    public function document_new()
+    {
+        $this->load->model('Document_model');
+        $this->Document_model->ensure_schema();
+
+        $this->_view('document_form', [
+            'item'      => null,
+            'doc_pages' => Document_model::$pages,
+            'error'     => $this->session->flashdata('doc_error'),
+        ]);
+    }
+
+    public function document_edit($id)
+    {
+        $this->load->model('Document_model');
+        $this->Document_model->ensure_schema();
+
+        $item = $this->Document_model->get((int)$id);
+        if (!$item) redirect('admin/documents');
+
+        $this->_view('document_form', [
+            'item'      => $item,
+            'doc_pages' => Document_model::$pages,
+            'error'     => $this->session->flashdata('doc_error'),
+        ]);
+    }
+
+    public function document_do_new()
+    {
+        if ($this->input->method() !== 'post') redirect('admin/documents');
+        $this->load->model('Document_model');
+
+        $fields = $this->_document_post();
+        if ($fields['file_path'] === '') {
+            $this->session->set_flashdata('doc_error', 'Aucun fichier : téléversez un document ou saisissez une URL externe.');
+            redirect('admin/document_new');
+        }
+
+        $id = $this->Document_model->insert($fields);
+        $this->_log('document_added', 'document', $id, $fields['title']);
+        $this->session->set_flashdata('doc_success', 'Document ajouté.');
+        redirect('admin/documents');
+    }
+
+    public function document_do_edit($id)
+    {
+        if ($this->input->method() !== 'post') redirect('admin/documents');
+        $this->load->model('Document_model');
+
+        $item = $this->Document_model->get((int)$id);
+        if (!$item) redirect('admin/documents');
+
+        $fields = $this->_document_post();
+
+        // Aucun nouveau fichier envoyé : on conserve celui déjà en place
+        if ($fields['file_path'] === '') {
+            unset($fields['file_path'], $fields['original_name'], $fields['mime_type'], $fields['file_size']);
+        }
+
+        $this->Document_model->update((int)$id, $fields);
+        $this->_log('document_updated', 'document', $id, $this->input->post('title', TRUE));
+        $this->session->set_flashdata('doc_success', 'Document mis à jour.');
+        redirect('admin/documents');
+    }
+
+    public function document_delete($id)
+    {
+        if ($this->input->method() !== 'post') redirect('admin/documents');
+        $this->load->model('Document_model');
+
+        $item = $this->Document_model->get((int)$id);
+        if ($item) {
+            // Seuls les fichiers téléversés via l'admin sont effacés du disque.
+            // Les PDF historiques de assets/Documents/ sont toujours conservés.
+            if ($this->input->post('purge_file')
+                && strpos((string)$item->file_path, Document_model::UPL_DIR) === 0) {
+                @unlink(FCPATH . $item->file_path);
+            }
+            $this->Document_model->delete((int)$id);
+            $this->_log('document_deleted', 'document', $id, $item->title);
+            $this->session->set_flashdata('doc_success', 'Document supprimé.');
+        }
+        redirect('admin/documents');
+    }
+
+    public function document_toggle($id)
+    {
+        $this->load->model('Document_model');
+        $this->Document_model->toggle_visible((int)$id);
+        $this->_log('document_toggled', 'document', $id);
+        redirect('admin/documents');
+    }
+
+    /**
+     * Téléversement AJAX d'un fichier de documentation.
+     * Renvoie {ok, path, name, size, mime} — consommé par document_form.php.
+     */
+    public function upload_document()
+    {
+        if ($this->input->method() !== 'post') {
+            $this->_json(['ok' => false, 'msg' => 'Méthode non autorisée.']);
+            return;
+        }
+
+        $this->load->model('Document_model');
+        $upload_path = FCPATH . Document_model::UPL_DIR;
+        if (!is_dir($upload_path)) @mkdir($upload_path, 0755, TRUE);
+
+        if (!is_dir($upload_path) || !is_writable($upload_path)) {
+            $this->_json(['ok' => false, 'msg' => 'Dossier ' . Document_model::UPL_DIR . ' introuvable ou non inscriptible.']);
+            return;
+        }
+
+        $this->load->library('upload', [
+            'upload_path'   => $upload_path,
+            'allowed_types' => 'pdf|doc|docx|xls|xlsx|ppt|pptx|zip|csv|txt|jpg|jpeg|png|webp',
+            'max_size'      => 30720, // 30 Mo
+            'encrypt_name'  => TRUE,
+        ]);
+
+        if (!$this->upload->do_upload('file')) {
+            $this->_json(['ok' => false, 'msg' => $this->upload->display_errors('', '')]);
+            return;
+        }
+
+        $info = $this->upload->data();
+        $this->_log('document_file_uploaded', 'document', null, $info['orig_name'], ['size_kb' => $info['file_size']]);
+
+        $this->_json([
+            'ok'   => true,
+            'path' => Document_model::UPL_DIR . $info['file_name'],
+            'name' => $info['orig_name'],
+            'size' => (int)$info['file_size'] * 1024,
+            'mime' => $info['file_type'],
+        ]);
+    }
+
+    /**
+     * Valide le chemin d'un document : soit une URL http(s), soit un chemin
+     * interne sous assets/. Renvoie '' si le chemin n'est pas acceptable.
+     *
+     * Validation structurelle (pas de liste blanche de caractères) : les noms
+     * de fichiers réels contiennent accents, espaces, parenthèses et virgules.
+     */
+    private function _document_path($raw)
+    {
+        $path = trim(str_replace('\\', '/', $raw));
+        if ($path === '') return '';
+
+        if (preg_match('#^https?://#i', $path)) return $path;
+
+        $path = ltrim($path, '/');
+
+        if (strpos($path, 'assets/') !== 0)     return ''; // hors zone publique
+        if (strpos($path, '..') !== false)      return ''; // traversée de répertoire
+        if (strpos($path, "\0") !== false)      return '';
+        if (preg_match('/[\x00-\x1F\x7F]/', $path)) return ''; // caractères de contrôle
+
+        // Jamais de script exécutable
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (in_array($ext, ['php', 'phtml', 'php3', 'php4', 'php5', 'php7', 'phar', 'cgi', 'pl', 'py', 'htaccess'], true)) {
+            return '';
+        }
+
+        return $path;
+    }
+
+    /** Champs du formulaire Document, normalisés. */
+    private function _document_post()
+    {
+        $pages = array_keys(Document_model::$pages);
+        $page  = (string)$this->input->post('page');
+        if (!in_array($page, $pages, TRUE)) $page = $pages[0];
+
+        $path = $this->_document_path((string)$this->input->post('file_path'));
+
+        $icon = trim((string)$this->input->post('icon'));
+        if (!preg_match('/^fa-[a-z0-9-]{2,}$/', $icon)) $icon = '';
+
+        $orig  = trim((string)$this->input->post('original_name', TRUE));
+        $title = trim((string)$this->input->post('title', TRUE));
+        if ($title === '') {
+            $title = $orig !== '' ? pathinfo($orig, PATHINFO_FILENAME) : 'Document';
+        }
+
+        return [
+            'page'          => $page,
+            'title'         => $title,
+            'subtitle'      => trim((string)$this->input->post('subtitle', TRUE)),
+            'file_path'     => $path,
+            'original_name' => $orig,
+            'mime_type'     => trim((string)$this->input->post('mime_type', TRUE)),
+            'file_size'     => (int)$this->input->post('file_size') ?: null,
+            'icon'          => $icon !== '' ? $icon : 'fa-file-pdf',
+            'badge'         => trim((string)$this->input->post('badge', TRUE)),
+            'sort_order'    => (int)$this->input->post('sort_order'),
+            'visible'       => $this->input->post('visible') ? 1 : 0,
+        ];
+    }
+
+    private function _json($payload)
+    {
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($payload, JSON_UNESCAPED_UNICODE));
+    }
+
+    // ================================================================
     // GALERIE PHOTOS
     // ================================================================
 

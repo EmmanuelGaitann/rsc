@@ -288,6 +288,7 @@ $_rn_details = [
   </div>
 </section>
 
+<?php if (!empty($docs)): ?>
 <section class="section" style="background: var(--light);">
   <div class="container">
     <div class="section-header fade-in" style="text-align:center;margin-bottom:2.5rem;">
@@ -295,53 +296,21 @@ $_rn_details = [
       <h2>Catalogues &amp; Ressources RENNER</h2>
       <p style="max-width:560px;margin:0 auto;">Téléchargez les brochures, fiches techniques et présentations officielles RENNER Kompressoren.</p>
     </div>
+    <?php /* Documents gérés dans Admin → Documents & PDF (table rsc_documents) */ ?>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;max-width:1000px;margin:0 auto;" class="fade-in">
 
-      <a href="<?= base_url('assets/Documents/Présentation_compresseurs_à_vis_FR.pdf') ?>" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:1rem;background:white;border:1px solid var(--border);border-left:4px solid var(--renner);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.boxShadow='var(--shadow)';this.style.transform='translateX(4px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
-        <div style="width:40px;height:40px;background:rgba(29,103,205,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-file-pdf" style="color:var(--renner);font-size:1.1rem;"></i></div>
-        <div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:0.88rem;color:var(--text);">Compresseurs à vis — Présentation</div><div style="font-size:0.75rem;color:var(--gray);">FR · Technologie &amp; gamme à vis</div></div>
+      <?php foreach ($docs as $doc): ?>
+      <a href="<?= doc_url($doc) ?>" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:1rem;background:white;border:1px solid var(--border);border-left:4px solid var(--renner);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.boxShadow='var(--shadow)';this.style.transform='translateX(4px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
+        <div style="width:40px;height:40px;background:rgba(29,103,205,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid <?= htmlspecialchars(doc_icon($doc)) ?>" style="color:var(--renner);font-size:1.1rem;"></i></div>
+        <div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:0.88rem;color:var(--text);"><?= htmlspecialchars($doc->title) ?></div><?php if ($doc->subtitle): ?><div style="font-size:0.75rem;color:var(--gray);"><?= htmlspecialchars($doc->subtitle) ?></div><?php endif; ?></div>
         <i class="fa-solid fa-arrow-down-to-line" style="color:var(--renner);font-size:0.9rem;flex-shrink:0;"></i>
       </a>
-
-      <a href="<?= base_url('assets/Documents/RS(F) 55,0 - 1-110_prospectus_FR.pdf') ?>" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:1rem;background:white;border:1px solid var(--border);border-left:4px solid var(--renner);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.boxShadow='var(--shadow)';this.style.transform='translateX(4px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
-        <div style="width:40px;height:40px;background:rgba(29,103,205,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-file-pdf" style="color:var(--renner);font-size:1.1rem;"></i></div>
-        <div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:0.88rem;color:var(--text);">RS / RSF 55–110 kW — Prospectus</div><div style="font-size:0.75rem;color:var(--gray);">FR · Série RS/RSF puissances moyennes</div></div>
-        <i class="fa-solid fa-arrow-down-to-line" style="color:var(--renner);font-size:0.9rem;flex-shrink:0;"></i>
-      </a>
-
-      <a href="<?= base_url('assets/Documents/Product overview_flyer_DE_EN_FR.pdf') ?>" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:1rem;background:white;border:1px solid var(--border);border-left:4px solid var(--renner);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.boxShadow='var(--shadow)';this.style.transform='translateX(4px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
-        <div style="width:40px;height:40px;background:rgba(29,103,205,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-file-pdf" style="color:var(--renner);font-size:1.1rem;"></i></div>
-        <div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:0.88rem;color:var(--text);">Vue d'ensemble produits RENNER</div><div style="font-size:0.75rem;color:var(--gray);">DE/EN/FR · Catalogue gamme complète</div></div>
-        <i class="fa-solid fa-arrow-down-to-line" style="color:var(--renner);font-size:0.9rem;flex-shrink:0;"></i>
-      </a>
-
-      <a href="<?= base_url('assets/Documents/Brochure image_DE_EN_FR.pdf') ?>" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:1rem;background:white;border:1px solid var(--border);border-left:4px solid var(--renner);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.boxShadow='var(--shadow)';this.style.transform='translateX(4px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
-        <div style="width:40px;height:40px;background:rgba(29,103,205,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-images" style="color:var(--renner);font-size:1.1rem;"></i></div>
-        <div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:0.88rem;color:var(--text);">Brochure image RENNER</div><div style="font-size:0.75rem;color:var(--gray);">DE/EN/FR · Catalogue visuel institutionnel</div></div>
-        <i class="fa-solid fa-arrow-down-to-line" style="color:var(--renner);font-size:0.9rem;flex-shrink:0;"></i>
-      </a>
-
-      <a href="<?= base_url('assets/Documents/Commandes électroniques_prospectus_FR.pdf') ?>" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:1rem;background:white;border:1px solid var(--border);border-left:4px solid var(--renner);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.boxShadow='var(--shadow)';this.style.transform='translateX(4px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
-        <div style="width:40px;height:40px;background:rgba(29,103,205,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-microchip" style="color:var(--renner);font-size:1.1rem;"></i></div>
-        <div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:0.88rem;color:var(--text);">Commandes électroniques RENNER</div><div style="font-size:0.75rem;color:var(--gray);">FR · Systèmes de contrôle &amp; supervision</div></div>
-        <i class="fa-solid fa-arrow-down-to-line" style="color:var(--renner);font-size:0.9rem;flex-shrink:0;"></i>
-      </a>
-
-      <a href="<?= base_url('assets/Documents/Scroll compressors overview - EN.pdf') ?>" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:1rem;background:white;border:1px solid var(--border);border-left:4px solid var(--renner);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.boxShadow='var(--shadow)';this.style.transform='translateX(4px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
-        <div style="width:40px;height:40px;background:rgba(29,103,205,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-file-pdf" style="color:var(--renner);font-size:1.1rem;"></i></div>
-        <div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:0.88rem;color:var(--text);">Scroll Compressors — Overview</div><div style="font-size:0.75rem;color:var(--gray);">EN · Compresseurs scroll sans huile</div></div>
-        <i class="fa-solid fa-arrow-down-to-line" style="color:var(--renner);font-size:0.9rem;flex-shrink:0;"></i>
-      </a>
-
-      <a href="<?= base_url('assets/Documents/filter family.pdf') ?>" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:1rem;background:white;border:1px solid var(--border);border-left:4px solid var(--renner);border-radius:10px;padding:1.1rem 1.25rem;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.boxShadow='var(--shadow)';this.style.transform='translateX(4px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
-        <div style="width:40px;height:40px;background:rgba(29,103,205,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-filter" style="color:var(--renner);font-size:1.1rem;"></i></div>
-        <div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:0.88rem;color:var(--text);">Famille de filtres RENNER</div><div style="font-size:0.75rem;color:var(--gray);">EN · Filtration air comprimé</div></div>
-        <i class="fa-solid fa-arrow-down-to-line" style="color:var(--renner);font-size:0.9rem;flex-shrink:0;"></i>
-      </a>
+      <?php endforeach; ?>
 
     </div>
   </div>
 </section>
+<?php endif; ?>
 
 <section class="section cta-section">
   <div class="container">

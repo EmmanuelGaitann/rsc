@@ -93,9 +93,11 @@
         <a href="<?= base_url('contact') ?>?product=huile-CAS" class="btn-cas">
           <i class="fa-solid fa-paper-plane"></i> Demander un devis
         </a>
+        <?php if (!empty($docs)): ?>
         <a href="#telechargements" class="btn-cas-outline">
           <i class="fa-solid fa-file-arrow-down"></i> Fiches techniques
         </a>
+        <?php endif; ?>
       </div>
     </div>
     <div class="cas-hero-img-wrap" <?= cms_field_attrs('hero_img', 'image', 'Image principale du produit', isset($c['hero_img']) ? $c['hero_img'] : '') ?>>
@@ -253,6 +255,7 @@ $_cas_stats = [
   </div>
 </section>
 
+<?php if (!empty($docs)): ?>
 <section id="telechargements" class="section">
   <div class="container">
     <div class="section-header fade-in">
@@ -260,34 +263,24 @@ $_cas_stats = [
       <h2 class="section-title">Téléchargements</h2>
       <p class="section-subtitle">Accédez aux fiches techniques, documentations produit et fiches de sécurité CAS Lubricants.</p>
     </div>
+    <?php /* Documents gérés dans Admin → Documents & PDF (table rsc_documents) */ ?>
     <div style="display:flex;flex-direction:column;gap:1rem;max-width:720px;margin:0 auto;" class="fade-in">
-      <a href="<?= base_url('assets/Documents/Compressor_Oil_Flyer_KAS_Eng.pdf') ?>" target="_blank" rel="noopener" class="dl-card">
-        <div class="dl-icon"><i class="fa-solid fa-file-pdf"></i></div>
+      <?php foreach ($docs as $doc): ?>
+      <a href="<?= doc_url($doc) ?>" target="_blank" rel="noopener" class="dl-card">
+        <div class="dl-icon"><i class="fa-solid <?= htmlspecialchars(doc_icon($doc)) ?>"></i></div>
         <div class="dl-info">
-          <div class="dl-title">Flyer produit — CAS Compressor Oil</div>
-          <div class="dl-sub">Présentation commerciale · Applications · Avantages · Version anglaise</div>
+          <div class="dl-title"><?= htmlspecialchars($doc->title) ?></div>
+          <?php if ($doc->subtitle): ?>
+          <div class="dl-sub"><?= htmlspecialchars($doc->subtitle) ?></div>
+          <?php endif; ?>
         </div>
-        <span class="dl-badge">PDF · EN</span>
+        <span class="dl-badge"><?= htmlspecialchars(doc_badge($doc)) ?></span>
       </a>
-      <a href="<?= base_url('assets/Documents/cas_lubricant.pdf') ?>" target="_blank" rel="noopener" class="dl-card">
-        <div class="dl-icon"><i class="fa-solid fa-file-pdf"></i></div>
-        <div class="dl-info">
-          <div class="dl-title">Fiche technique CAS Lubricants</div>
-          <div class="dl-sub">Spécifications · Caractéristiques physico-chimiques · Recommandations d'utilisation</div>
-        </div>
-        <span class="dl-badge">PDF</span>
-      </a>
-      <a href="<?= base_url('assets/Documents/CAS_C1_MSDS.pdf') ?>" target="_blank" rel="noopener" class="dl-card">
-        <div class="dl-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <div class="dl-info">
-          <div class="dl-title">Fiche de sécurité MSDS — CAS C1</div>
-          <div class="dl-sub">Material Safety Data Sheet · Stockage · Premiers secours · Élimination</div>
-        </div>
-        <span class="dl-badge">MSDS</span>
-      </a>
+      <?php endforeach; ?>
     </div>
   </div>
 </section>
+<?php endif; ?>
 
 <section class="section" style="background:linear-gradient(135deg,var(--dark-deep) 0%,var(--dark) 100%);" <?= cms_section_attrs($c, 'cta', "Appel à l'action") ?>>
   <div class="container" style="text-align:center;">
